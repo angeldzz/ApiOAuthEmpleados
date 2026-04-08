@@ -3,6 +3,9 @@ using ApiOAuthEmpleados.Repositories;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
+using System.Security.Claims;
+using ApiOAuthEmpleados.Helpers;
 
 namespace ApiOAuthEmpleados.Controllers
 {
@@ -11,9 +14,11 @@ namespace ApiOAuthEmpleados.Controllers
     public class EmpleadosController : ControllerBase
     {
         private RepositoryHospital repo;
-        public EmpleadosController(RepositoryHospital repo)
+        private IConfiguration configuration;
+        public EmpleadosController(RepositoryHospital repo, IConfiguration configuration)
         {
             this.repo = repo;
+            this.configuration = configuration;
         }
         [HttpGet]
         public async Task<ActionResult<List<Empleado>>> GetEmpleados()
@@ -26,6 +31,24 @@ namespace ApiOAuthEmpleados.Controllers
         {
             return await this.repo.FindEmpleadoAsync(id);
         }
-        
+        [Authorize]
+        [HttpGet]
+        [Route("[action]")]
+        public async Task<ActionResult<Empleado>> Perfil()
+        {
+            string jsonEmpleado = HelperEncripter.GetUserToken(HttpContext.User, configuration);
+            Empleado empleado = JsonConvert.DeserializeObject<Empleado>(jsonEmpleado);
+            return await this.repo.FindEmpleadoAsync(empleado.IdEmpleado);
+        }
+        [Authorize]
+        [HttpGet]
+        [Route("[action]")]
+        public async Task<ActionResult<List<Empleado>>> Compis()
+        {
+            string jsonEmpleado = HelperEncripter.GetUserToken(HttpContext.User, configuration);
+            Empleado empleado = JsonConvert.DeserializeObject<Empleado>(jsonEmpleado);
+            return await this.repo.GetCompisAsync(empleado.IdDepartamento);
+        }
+
     }
 }

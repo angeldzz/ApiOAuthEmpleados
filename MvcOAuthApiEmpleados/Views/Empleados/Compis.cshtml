@@ -1,0 +1,49 @@
+﻿@model List<Empleado>
+
+<div class="container mt-5">
+    <h2 class="text-center mb-4 text-primary">Mis Compañeros</h2>
+    
+    @if (Model != null && Model.Any())
+    {
+        <div class="row row-cols-1 row-cols-md-3 g-4">
+            @foreach (var compi in Model)
+            {
+                <div class="col">
+                    <div class="card h-100 shadow-sm border-0 rounded-4">
+                        <div class="card-header bg-secondary text-white text-center py-3 rounded-top-4">
+                            <h4 class="mb-0">@compi.Apellido</h4>
+                            <small class="text-light">ID: @compi.IdEmpleado</small>
+                        </div>
+                        <div class="card-body p-4">
+                            <p class="card-text mb-2">
+                                <strong><i class="bi bi-briefcase"></i> Oficio:</strong> 
+                                <span class="fs-5 text-dark">@compi.Oficio</span>
+                            </p>
+                            <hr class="text-muted" />
+                            <p class="card-text mb-2">
+                                <strong><i class="bi bi-building"></i> Departamento:</strong> 
+                                <span class="fs-5 text-dark">@compi.IdDepartamento</span>
+                            </p>
+                        </div>
+                        <div class="card-footer bg-light text-center py-3 rounded-bottom-4">
+                            <span class="badge bg-success fs-6 px-3 py-2 shadow-sm">
+                                Salario: @compi.Salario.ToString("C")
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="alert alert-info text-center shadow-sm rounded-3" role="alert">
+            <h4 class="alert-heading">¡Vaya!</h4>
+            <p class="mb-0">No se encontraron compañeros en tu departamento o en la lista actual.</p>
+        </div>
+    }
+
+    <div class="text-center mt-5">
+        <a asp-action="Index" class="btn btn-outline-primary px-4 rounded-pill">Volver</a>
+    </div>
+</div>

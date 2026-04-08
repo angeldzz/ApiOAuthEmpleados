@@ -4,7 +4,10 @@ using ApiOAuthEmpleados.Repositories;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
+using Newtonsoft.Json;
 using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using Microsoft.Extensions.Configuration;
 
 namespace ApiOAuthEmpleados.Controllers
 {
@@ -14,11 +17,17 @@ namespace ApiOAuthEmpleados.Controllers
     {
         private RepositoryHospital repo;
         private HelperActionOAuthService helper;
-        public AuthController(RepositoryHospital repo, HelperActionOAuthService helper)
+        private HelperEncripter encripter;
+        private IConfiguration configuration;
+        
+        public AuthController(RepositoryHospital repo, HelperActionOAuthService helper, HelperEncripter encripter, IConfiguration configuration)
         {
             this.repo = repo;
             this.helper = helper;
+            this.encripter = encripter;
+            this.configuration = configuration;
         }
+
         [HttpPost]
         [Route ("[action]")]
         public async Task<ActionResult> Login(LoginModel model)
@@ -30,6 +39,17 @@ namespace ApiOAuthEmpleados.Controllers
             }
             else
             {
+                string jsonEmpleado = JsonConvert.SerializeObject(empleado);   
+                
+                // ENCRIPTAR EL JSON CON NUESTRO HELPER
+                string claveEncriptacion = configuration.GetValue<string>("ApiOAuthToken:ClaveEncriptacion");
+                string jsonEncriptado = HelperEncripter.EncryptString(jsonEmpleado, claveEncriptacion);
+
+                //CREAMOS UN ARRAY DE CLAIMS PARA EL TOKEN
+                Claim[] claims = new[]
+                {
+                    new Claim("UserData", jsonEncriptado)
+                };
                 //DEBEMOS CREAR UNAS CREDENCIALES CON NUESTRO TOKEN
                 SigningCredentials credentials = 
                     new SigningCredentials
@@ -37,6 +57,7 @@ namespace ApiOAuthEmpleados.Controllers
                 //El token se genera con una clase y debemos almacenar los datos de issuer
                 JwtSecurityToken token = 
                     new JwtSecurityToken(
+                        claims: claims,
                         issuer: this.helper.Issuer,
                         audience: this.helper.Audience,
                         signingCredentials: credentials,

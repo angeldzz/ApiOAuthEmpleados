@@ -1,4 +1,4 @@
-﻿namespace ApiOAuthEmpleados.Models
+﻿namespace MvcOAuthApiEmpleados.Models
 {
     public class LoginModel
     {
