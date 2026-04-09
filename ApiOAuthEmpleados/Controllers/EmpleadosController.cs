@@ -36,19 +36,37 @@ namespace ApiOAuthEmpleados.Controllers
         [Route("[action]")]
         public async Task<ActionResult<Empleado>> Perfil()
         {
-            string jsonEmpleado = HelperEncripter.GetUserToken(HttpContext.User, configuration);
+            string jsonEmpleado = HelperCryptography.GetUserToken(HttpContext.User, configuration);
             Empleado empleado = JsonConvert.DeserializeObject<Empleado>(jsonEmpleado);
             return await this.repo.FindEmpleadoAsync(empleado.IdEmpleado);
         }
-        [Authorize]
+        [Authorize(Roles = "PRESIDENTE")]
         [HttpGet]
         [Route("[action]")]
         public async Task<ActionResult<List<Empleado>>> Compis()
         {
-            string jsonEmpleado = HelperEncripter.GetUserToken(HttpContext.User, configuration);
+            string jsonEmpleado = HelperCryptography.GetUserToken(HttpContext.User, configuration);
             Empleado empleado = JsonConvert.DeserializeObject<Empleado>(jsonEmpleado);
             return await this.repo.GetCompisAsync(empleado.IdDepartamento);
         }
-
+        [HttpGet]
+        [Route("[action]")]
+        public async Task<ActionResult<List<string>>> GetOficios()
+        {
+            return await this.repo.GetOficiosAsync();
+        }
+        [HttpGet]
+        [Route("[action]")]
+        public async Task<ActionResult<List<Empleado>>> EmpleadosOficios([FromQuery] List<string> oficio)
+        {
+            return await this.repo.GetEmpleadosByOficioAsync(oficio);
+        }
+        [HttpPut]
+        [Route("[action]/{incremento}")]
+        public async Task<ActionResult> IncrementarSalarios(int incremento, [FromQuery] List<string> oficio)
+        {
+            await this.repo.IncrementarSalariosAsync(incremento, oficio);
+            return Ok();
+        }
     }
 }

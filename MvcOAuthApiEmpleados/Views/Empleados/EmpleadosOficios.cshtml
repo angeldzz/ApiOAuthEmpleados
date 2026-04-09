@@ -1,0 +1,58 @@
+﻿@model List<Empleado>
+
+@{
+    ViewData["Title"] = "EmpleadosOficios";
+    List<string> oficios = ViewData["OFICIOS"] as List<string>;
+}
+
+<h1>EmpleadosOficios</h1>
+
+<form method="post">
+    <label for="oficio">Oficio:</label>
+    <select id="oficio" name="oficio" class="form-control">
+        <option value="">-- Seleccione un oficio --</option>
+        @foreach (var oficio in oficios)
+        {
+            <option value="@oficio">@oficio</option>
+        }
+    </select>
+    <label>Incrementar salario: </label>
+    <input type="number" name="incremento" class="form-control" placeholder="Ingrese el incremento en porcentaje" />
+
+    <button type="submit" value="show" name="accion" class="btn btn-primary mt-2">Mostrar</button>
+    <button type="submit" value="update" name="accion" class="btn btn-warning mt-2">Incrementar</button>
+
+</form>
+
+@if (Model != null)
+{
+    <table class="table table-bordered table-striped">
+        <thead>
+            <tr>
+                <th>Id Empleado</th>
+                <th>Apellido</th>
+                <th>Oficio</th>
+                <th>Salario</th>
+                <th>Id Departamento</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>@item.IdEmpleado</td>
+                    <td>@item.Apellido</td>
+                    <td>@item.Oficio</td>
+                    <td>@item.Salario</td>
+                    <td>@item.IdDepartamento</td>
+                    <td>
+                        <a asp-action="Edit" asp-route-id="@item.IdEmpleado" class="btn btn-sm btn-primary">Edit</a>
+                        <a asp-action="Details" asp-route-id="@item.IdEmpleado" class="btn btn-sm btn-info">Details</a>
+                        <a asp-action="Delete" asp-route-id="@item.IdEmpleado" class="btn btn-sm btn-danger">Delete</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}

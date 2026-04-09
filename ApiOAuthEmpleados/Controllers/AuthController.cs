@@ -7,7 +7,6 @@ using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
-using Microsoft.Extensions.Configuration;
 
 namespace ApiOAuthEmpleados.Controllers
 {
@@ -17,21 +16,18 @@ namespace ApiOAuthEmpleados.Controllers
     {
         private RepositoryHospital repo;
         private HelperActionOAuthService helper;
-        private HelperEncripter encripter;
-        private IConfiguration configuration;
-        
-        public AuthController(RepositoryHospital repo, HelperActionOAuthService helper, HelperEncripter encripter, IConfiguration configuration)
+        private HelperCryptography encripter;
+        public AuthController(RepositoryHospital repo, HelperActionOAuthService helper, HelperCryptography encripter)
         {
             this.repo = repo;
             this.helper = helper;
             this.encripter = encripter;
-            this.configuration = configuration;
         }
-
         [HttpPost]
         [Route ("[action]")]
         public async Task<ActionResult> Login(LoginModel model)
         {
+            
             Empleado empleado = await this.repo.LogInEmpleado(model.UserName, int.Parse(model.Password));
             if (empleado == null)
             {
@@ -39,16 +35,25 @@ namespace ApiOAuthEmpleados.Controllers
             }
             else
             {
+                EmpleadoModel modelEmp = new EmpleadoModel
+                {
+                    IdEmpleado = empleado.IdEmpleado,
+                    Apellido = empleado.Apellido,
+                    Oficio = empleado.Oficio,
+                    Salario = empleado.Salario,
+                    IdDepartamento = empleado.IdDepartamento
+                };
+
                 string jsonEmpleado = JsonConvert.SerializeObject(empleado);   
                 
                 // ENCRIPTAR EL JSON CON NUESTRO HELPER
-                string claveEncriptacion = configuration.GetValue<string>("ApiOAuthToken:ClaveEncriptacion");
-                string jsonEncriptado = HelperEncripter.EncryptString(jsonEmpleado, claveEncriptacion);
+                string jsonEncriptado = HelperCryptography.EncryptString(jsonEmpleado, "encriptado123");
 
                 //CREAMOS UN ARRAY DE CLAIMS PARA EL TOKEN
                 Claim[] claims = new[]
                 {
-                    new Claim("UserData", jsonEncriptado)
+                    new Claim("UserData", jsonEncriptado),
+                    new Claim(ClaimTypes.Role, empleado.Oficio)
                 };
                 //DEBEMOS CREAR UNAS CREDENCIALES CON NUESTRO TOKEN
                 SigningCredentials credentials = 

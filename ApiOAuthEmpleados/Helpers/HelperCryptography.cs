@@ -8,7 +8,7 @@ using Microsoft.Extensions.Configuration;
 
 namespace ApiOAuthEmpleados.Helpers
 {
-    public class HelperEncripter
+    public class HelperCryptography
     {
         public static string GetUserToken(ClaimsPrincipal user, IConfiguration configuration)
         {

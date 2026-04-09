@@ -3,6 +3,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System.Net.Http.Headers;
 using System.Security.Claims;
+using System.Text;
 
 namespace MvcOAuthApiEmpleados.Services
 {
@@ -49,8 +50,8 @@ namespace MvcOAuthApiEmpleados.Services
         }
         private async Task<T> CallApiAsync<T>(string request)
         {
-            using (HttpClient client = new HttpClient()) 
-            { 
+            using (HttpClient client = new HttpClient())
+            {
                 client.BaseAddress = new Uri(this.UrlApi);
                 client.DefaultRequestHeaders.Clear();
                 client.DefaultRequestHeaders.Accept.Add(this.header);
@@ -74,7 +75,7 @@ namespace MvcOAuthApiEmpleados.Services
                 client.BaseAddress = new Uri(this.UrlApi);
                 client.DefaultRequestHeaders.Clear();
                 client.DefaultRequestHeaders.Accept.Add(this.header);
-                client.DefaultRequestHeaders.Add("Authorization", "bearer " + token );
+                client.DefaultRequestHeaders.Add("Authorization", "bearer " + token);
                 HttpResponseMessage response = await client.GetAsync(request);
                 if (response.IsSuccessStatusCode)
                 {
@@ -110,6 +111,40 @@ namespace MvcOAuthApiEmpleados.Services
             string token = this.contextAccessor.HttpContext.User
                 .FindFirst(x => x.Type == "TOKEN").Value;
             return await this.CallApiAsync<List<Empleado>>("api/empleados/compis", token);
+        }
+        //TANTNO EN INCREMENTAR COMO EN BUSCAR EMPLEADO POR OFICIO NECESITAMOS 
+        //GENERAR EL SIGUIENTE STRNG PARA EL REQUEST oficio=ANALISTA&oficio=PROGRAMADOR
+        //A PARTIR DE UNA COLECCION
+        private string TransformCollectionToQuery(List<string> collection)
+        {
+            string result = "";
+            foreach (string item in collection)
+            {
+                result += "oficio=" + item + "&";
+            }
+            return result.TrimEnd('&');
+        }
+        public async Task<List<Empleado>> GetEmpleadosByOficioAsync(List<string> oficios)
+        {
+            string request = "api/empleados/empleadosoficios?" + this.TransformCollectionToQuery(oficios);
+            return await this.CallApiAsync<List<Empleado>>(request);
+        }
+        public async Task UpdateEmpleadosAsync(int incremento, List<string> oficios)
+        {
+            string request = "api/Empleados/IncrementarSalarios/" + incremento;
+            string data = this.TransformCollectionToQuery(oficios);
+            using (HttpClient client = new HttpClient())
+            {
+                client.BaseAddress = new Uri(this.UrlApi);
+                client.DefaultRequestHeaders.Clear();
+                client.DefaultRequestHeaders.Accept.Add(this.header);
+                HttpResponseMessage response = await client.PutAsync(request + "?" + data, null);
+            }
+        }
+        public async Task<List<string>> GetOficiosAsync()
+        {
+            return await this.CallApiAsync<List<string>>("api/empleados/getoficios");
+
         }
     }
 }

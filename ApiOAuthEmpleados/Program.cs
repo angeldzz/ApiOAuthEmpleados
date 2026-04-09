@@ -10,7 +10,7 @@ var builder = WebApplication.CreateBuilder(args);
 HelperActionOAuthService helper = new HelperActionOAuthService(builder.Configuration);
 //ESTA INSTANCIA SOLAMENTE DEBEMOS CREARLA UNA VEZ DENTRO DE NUESTRA APLICACION
 builder.Services.AddSingleton<HelperActionOAuthService>(helper);
-builder.Services.AddTransient<HelperEncripter>();
+builder.Services.AddTransient<HelperCryptography>();
 builder.Services.AddAuthentication(helper.GetAuthenticationSchema())
     .AddJwtBearer(helper.GetJWTBearerOptions());
 
