@@ -1,3 +1,4 @@
+using Azure.Security.KeyVault.Secrets;
 using Microsoft.AspNetCore.Mvc;
 using MvcOAuthApiEmpleados.Models;
 using System.Diagnostics;
@@ -6,11 +7,22 @@ namespace MvcOAuthApiEmpleados.Controllers
 {
     public class HomeController : Controller
     {
+        private SecretClient secretClient;
+        public HomeController(SecretClient secretClient)
+        {
+            this.secretClient = secretClient;
+        }
         public IActionResult Index()
         {
             return View();
         }
-
+        [HttpPost]
+        public async Task<IActionResult> Index(string secretname)
+        {
+            KeyVaultSecret secret = await this.secretClient.GetSecretAsync(secretname);
+            ViewData["SECRETO"] = secret.Value;
+            return View();
+        }
         public IActionResult Privacy()
         {
             return View();
